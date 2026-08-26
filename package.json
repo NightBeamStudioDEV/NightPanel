@@ -1,0 +1,44 @@
+{
+  "name": "night-panel",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Desktop operations console for NightWatch Pro.",
+  "homepage": "https://github.com/NightBeamStudioDEV/NightPanel#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NightBeamStudioDEV/NightPanel.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NightBeamStudioDEV/NightPanel/issues"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "fake-server": "node tools/fake-server.mjs --token test-only-nightpanel-token",
+    "test": "vitest run",
+    "lint": "tsc -b --pretty false"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.8.0",
+    "@tauri-apps/plugin-autostart": "^2.5.0",
+    "@tauri-apps/plugin-notification": "^2.3.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "recharts": "^3.10.1",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.8.0",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.2",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.5",
+    "vitest": "^3.2.4",
+    "ws": "^8.18.3"
+  }
+}

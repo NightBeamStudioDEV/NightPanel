@@ -1,0 +1,27 @@
+{
+  "protocol": 1,
+  "type": "session.auth_ok",
+  "timestamp": 1787720000000,
+  "serverId": "example-01",
+  "data": {
+    "server": {
+      "serverId": "example-01",
+      "serverName": "Example Server",
+      "antiCheatVersion": "3.3.0",
+      "minecraftVersion": "1.21.1",
+      "serverSoftware": "Paper",
+      "folia": false,
+      "remoteActionsEnabled": true,
+      "protocol": 1
+    },
+    "checks": [],
+    "authorization": {
+      "credentialId": "example-viewer",
+      "label": "Example viewer",
+      "role": "VIEWER",
+      "permissions": ["monitor.read", "audit.read"]
+    },
+    "capabilities": ["audit.v1", "player-actions.v1", "port-migration.v1"]
+  }
+}
+
