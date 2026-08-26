@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/NightBeamStudioDEV/NightPanel/protocol/v1/envelope.schema.json",
+  "title": "NightPanel Protocol 1 Envelope",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["protocol", "type", "timestamp", "serverId", "data"],
+  "properties": {
+    "protocol": { "const": 1 },
+    "type": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "integer", "minimum": 0 },
+    "serverId": { "type": "string", "minLength": 1 },
+    "requestId": { "type": "string", "minLength": 1 },
+    "data": { "type": "object" }
+  }
+}
+
