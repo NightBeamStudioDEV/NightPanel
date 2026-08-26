@@ -1,9 +1,20 @@
 import { useMemo, useState } from "react";
 import { Badge, Bars, Empty } from "../ui/bits";
+import { PlayerAvatar } from "../ui/PlayerAvatar";
 import { useApp } from "../state/store";
 import { useActiveAlerts, useActiveRuntime } from "../state/hooks";
 import { formatAgo } from "../lib/format";
 import { investigationScore, scoreBand } from "../protocol/risk";
+
+const ACTIONS = [
+  ["warn", "Warn", "player.warn"],
+  ["kick", "Kick", "player.kick"],
+  ["reset_vl", "Reset VL", "player.reset_vl"],
+  ["temporary_exemption", "Exempt 15m", "player.exempt"],
+  ["revoke_exemption", "Revoke exemption", "player.exempt"],
+  ["setback", "Set back", "player.setback"],
+  ["ban", "Ban", "player.ban"],
+] as const;
 
 export function PlayersPage() {
   const activeId = useApp((s) => s.activeServerId);
@@ -21,8 +32,7 @@ export function PlayersPage() {
 
   const selected = useMemo(() => {
     if (!investigating) return null;
-    return players.find((p) => p.uuid === investigating || p.name === investigating)
-      ?? { uuid: investigating, name: investigating, ping: 0, totalVl: 0, alerts: 0, joinTime: Date.now(), perCheckVl: {} };
+    return players.find((p) => p.uuid === investigating || p.name === investigating) ?? null;
   }, [investigating, players]);
 
   const timeline = alerts.filter((a) => selected && (a.playerUuid === selected.uuid || a.playerName === selected.name));
@@ -60,7 +70,15 @@ export function PlayersPage() {
                   const risk = investigationScore(playerAlerts);
                   return (
                     <tr key={player.uuid} className={investigating === player.uuid ? "active" : ""} onClick={() => investigate(player.uuid)}>
-                      <td>{player.name}{watchlist.includes(player.name) ? " ★" : ""}</td>
+                      <td>
+                        <span className="player-cell">
+                          <PlayerAvatar name={player.name} uuid={player.uuid} size={28} />
+                          <span>
+                            <strong>{player.name}</strong>
+                            {watchlist.includes(player.name) ? <span className="watch-mark">Watching</span> : null}
+                          </span>
+                        </span>
+                      </td>
                       <td>{player.ping}ms</td>
                       <td>{player.alerts}</td>
                       <td>{player.totalVl.toFixed(1)}</td>
@@ -75,13 +93,16 @@ export function PlayersPage() {
         <div className="card">
           {selected ? (
             <>
-              <div className="row" style={{ justifyContent: "space-between" }}>
-                <h2 style={{ margin: 0, letterSpacing: 0, textTransform: "none", fontSize: 18, color: "var(--text)" }}>{selected.name}</h2>
+              <div className="player-hero">
+                <PlayerAvatar name={selected.name} uuid={selected.uuid} size={56} />
+                <div>
+                  <h2 className="player-name">{selected.name}</h2>
+                  <p className="muted mono">{selected.uuid}</p>
+                </div>
                 <button className="btn" onClick={() => toggleWatch(selected.name)}>
                   {watchlist.includes(selected.name) ? "Unwatch" : "Watch"}
                 </button>
               </div>
-              <p className="muted">{selected.uuid}</p>
               <div className="grid-4" style={{ margin: "12px 0" }}>
                 <div className="metric">Priority<b>{score} / 100</b><span className="muted">{scoreBand(score)}</span></div>
                 <div className="metric">Ping<b>{selected.ping}ms</b></div>
@@ -107,30 +128,38 @@ export function PlayersPage() {
               <h2>Check breakdown</h2>
               <Bars items={breakdown.slice(0, 8)} />
               <div className="action-panel">
-                <div className="row" style={{ justifyContent: "space-between" }}><h2 style={{ margin: 0 }}>Operator actions</h2><span className="role-chip">{runtime?.authorization?.role ?? "LEGACY"}</span></div>
-                <div className="field"><label>Required reason</label><input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Reason recorded in the server audit trail" /></div>
+                <div className="row" style={{ justifyContent: "space-between" }}>
+                  <h2 style={{ margin: 0 }}>Operator actions</h2>
+                  <span className="role-chip">{runtime?.authorization?.role ?? "LEGACY"}</span>
+                </div>
+                <div className="field">
+                  <label>Required reason</label>
+                  <input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Reason recorded in the server audit trail" />
+                </div>
                 <div className="action-grid">
-                  {([
-                    ["warn", "Warn", "player.warn"],
-                    ["kick", "Kick", "player.kick"],
-                    ["reset_vl", "Reset VL", "player.reset_vl"],
-                    ["temporary_exemption", "Exempt 15m", "player.exempt"],
-                    ["revoke_exemption", "Revoke exemption", "player.exempt"],
-                    ["setback", "Set back", "player.setback"],
-                    ["ban", "Ban", "player.ban"],
-                  ] as const).map(([action, label, permission]) => {
+                  {ACTIONS.map(([action, label, permission]) => {
                     const allowed = runtime?.authorization?.role === "ADMIN" || (runtime?.authorization?.permissions as string[] | undefined)?.includes(permission);
-                    return <button key={action} className={`btn ${action === "ban" || action === "kick" ? "danger" : ""}`} disabled={!allowed || !activeId || !reason.trim() || Boolean(busy)} title={allowed ? "" : `Requires ${permission}`} onClick={() => {
-                      if (!activeId || !selected) return;
-                      setBusy(action);
-                      setActionError("");
-                      void requestAction(activeId, {
-                        action: action as "warn" | "kick" | "reset_vl" | "temporary_exemption" | "revoke_exemption" | "setback" | "ban",
-                        uuid: selected.uuid,
-                        reason: reason.trim(),
-                        durationSeconds: action === "temporary_exemption" ? 900 : undefined,
-                      }).then(() => setReason("")).catch((error: unknown) => setActionError(error instanceof Error ? error.message : "Action failed")).finally(() => setBusy(""));
-                    }}>{busy === action ? "Working…" : label}</button>;
+                    return (
+                      <button
+                        key={action}
+                        className={`btn ${action === "ban" || action === "kick" ? "danger" : ""}`}
+                        disabled={!allowed || !activeId || reason.trim().length < 3 || Boolean(busy)}
+                        title={allowed ? "" : `Requires ${permission}`}
+                        onClick={() => {
+                          if (!activeId || !selected) return;
+                          setBusy(action);
+                          setActionError("");
+                          void requestAction(activeId, {
+                            action,
+                            uuid: selected.uuid,
+                            reason: reason.trim(),
+                            durationSeconds: action === "temporary_exemption" ? 900 : undefined,
+                          }).then(() => setReason("")).catch((error: unknown) => setActionError(error instanceof Error ? error.message : "Action failed")).finally(() => setBusy(""));
+                        }}
+                      >
+                        {busy === action ? "Working…" : label}
+                      </button>
+                    );
                   })}
                 </div>
                 {actionError ? <p className="danger-text">{actionError}</p> : null}

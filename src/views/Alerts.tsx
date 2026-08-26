@@ -1,5 +1,6 @@
 import { Fragment, useMemo, useState } from "react";
 import { Badge, Empty, alertCsv } from "../ui/bits";
+import { PlayerAvatar } from "../ui/PlayerAvatar";
 import { useApp } from "../state/store";
 import { formatAgo, formatExact } from "../lib/format";
 import { matchesAlert, parseQuery } from "../protocol/search";
@@ -65,7 +66,12 @@ export function AlertsPage() {
               {visible.slice(0, 400).map((alert) => (
                 <tr key={alert.id} className={alert.id === selected ? "active" : ""} onClick={() => selectAlert(alert.id)}>
                   <td title={formatExact(alert.timestamp)}>{formatAgo(alert.timestamp)}</td>
-                  <td>{alert.playerName}</td>
+                  <td>
+                    <span className="player-cell">
+                      <PlayerAvatar name={alert.playerName} uuid={alert.playerUuid} size={24} />
+                      {alert.playerName}
+                    </span>
+                  </td>
                   <td>{alert.checkName}</td>
                   <td>{(alert.vl ?? 0).toFixed(1)}</td>
                   <td>{alert.ping}ms</td>
@@ -84,7 +90,13 @@ export function AlertsPage() {
             <button className="btn ghost" onClick={() => selectAlert(null)}>Close</button>
           </div>
           <dl className="kv" style={{ marginTop: 16 }}>
-            <dt>Player</dt><dd>{selectedAlert.playerName}</dd>
+            <dt>Player</dt>
+            <dd>
+              <span className="player-cell">
+                <PlayerAvatar name={selectedAlert.playerName} uuid={selectedAlert.playerUuid} size={28} />
+                {selectedAlert.playerName}
+              </span>
+            </dd>
             <dt>UUID</dt><dd>{selectedAlert.playerUuid || "—"}</dd>
             <dt>Check</dt><dd>{selectedAlert.checkName} ({selectedAlert.checkId})</dd>
             <dt>Domain</dt><dd>{selectedAlert.domain}</dd>

@@ -104,7 +104,7 @@ export class ServerConnection {
       const timer = window.setTimeout(() => {
         this.pending.delete(requestId);
         reject(new Error("request timed out"));
-      }, 8000);
+      }, 20000);
       this.pending.set(requestId, { resolve, reject, timer });
       this.send(type, data, requestId);
     });

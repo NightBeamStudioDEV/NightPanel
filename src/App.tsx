@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useApp } from "./state/store";
 import { ErrorBoundary } from "./ui/ErrorBoundary";
 import { Shell } from "./ui/Shell";
+import { TitleBar } from "./ui/TitleBar";
 import { Onboarding, Wizard } from "./views/Onboarding";
 import { setLaunchOnStartup } from "./lib/platform";
 
@@ -27,19 +28,29 @@ export function App() {
   }, [settings.launchOnStartup]);
 
   if (!ready) {
-    return <div className="onboard muted">Loading Night Panel…</div>;
+    return (
+      <div className="frame">
+        <TitleBar />
+        <div className="login-screen"><p className="muted">Loading Night Panel…</p></div>
+      </div>
+    );
   }
-  if (servers.length === 0) {
-    return <Onboarding />;
-  }
+
   return (
-    <ErrorBoundary>
-      <Shell />
-      {wizard ? (
-        <div className="drawer" style={{ width: 420 }}>
-          <Wizard />
-        </div>
-      ) : null}
-    </ErrorBoundary>
+    <div className="frame">
+      <TitleBar />
+      {servers.length === 0 ? (
+        <Onboarding />
+      ) : (
+        <ErrorBoundary>
+          <Shell />
+          {wizard ? (
+            <div className="login-overlay">
+              <Wizard />
+            </div>
+          ) : null}
+        </ErrorBoundary>
+      )}
+    </div>
   );
 }

@@ -14,6 +14,8 @@ import { LogsPage } from "../views/Logs";
 import { SettingsPage } from "../views/Settings";
 import { AuditPage } from "../views/Audit";
 import { AccessPage } from "../views/Access";
+import { IconPlus, IconSearch, NAV_ICONS } from "./icons";
+import { PlayerAvatar } from "./PlayerAvatar";
 
 const LABELS: Record<ViewId, string> = {
   overview: "Overview",
@@ -28,23 +30,9 @@ const LABELS: Record<ViewId, string> = {
   settings: "Settings",
 };
 
-const ICONS: Record<ViewId, string> = {
-  overview: "◫",
-  alerts: "⚠",
-  players: "◎",
-  checks: "✓",
-  analytics: "⌁",
-  servers: "▣",
-  audit: "≡",
-  access: "♙",
-  logs: ">_",
-  settings: "⚙",
-};
-
 export function Shell() {
   const view = useApp((s) => s.view);
   const setView = useApp((s) => s.setView);
-  const servers = useApp((s) => s.servers);
   const activeId = useApp((s) => s.activeServerId);
   const runtimes = useApp((s) => s.runtimes);
   const commandOpen = useApp((s) => s.commandOpen);
@@ -54,9 +42,7 @@ export function Shell() {
   const toasts = useApp((s) => s.toasts);
   const startWizard = useApp((s) => s.startWizard);
 
-  const active = servers.find((s) => s.id === activeId);
   const runtime = activeId ? runtimes[activeId] : undefined;
-  const connected = runtime?.state === "connected";
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -84,31 +70,27 @@ export function Shell() {
 
   return (
     <div className="app">
-      <header className="topbar">
-        <div className="brand">
-          <img src="/icon.png" alt="" width={22} height={22} />
-          <div className="wordmark">
-            Night Panel
-            <span>Anti-Cheat Intelligence</span>
-          </div>
-        </div>
-        <div className="spacer" />
-        <strong>{active?.name ?? "No server"}</strong>
-        <span className="status-pill">
-          <span className={`dot ${connected ? "ok" : runtime?.state === "reconnecting" || runtime?.state === "connecting" ? "spin" : "crit"}`} />
-          {statusLabel(runtime?.state, runtime?.rttMs)}
-        </span>
-      </header>
       <div className="app-body">
         <nav className="nav" aria-label="Primary">
-          {VIEWS.map((id, index) => (
-            <button key={id} className={view === id ? "active" : ""} onClick={() => setView(id)} title={LABELS[id]} aria-label={LABELS[id]}>
-              <span className="nav-icon" aria-hidden="true">{ICONS[id]}</span>
-              <span className="label">{LABELS[id]}</span>
-              <span className="k">{index < 7 ? `Ctrl+${index + 1}` : ""}</span>
-            </button>
-          ))}
-          <button className="nav-collapse ghost btn" onClick={startWizard} title="Add server" aria-label="Add server"><span className="nav-icon" aria-hidden="true">+</span><span className="label">Add server</span></button>
+          {VIEWS.map((id, index) => {
+            const Icon = NAV_ICONS[id];
+            return (
+              <button key={id} className={view === id ? "active" : ""} onClick={() => setView(id)} title={LABELS[id]} aria-label={LABELS[id]}>
+                <span className="nav-icon" aria-hidden="true">{Icon ? <Icon /> : null}</span>
+                <span className="label">{LABELS[id]}</span>
+                <span className="k">{index < 7 ? `Ctrl+${index + 1}` : ""}</span>
+              </button>
+            );
+          })}
+          <button className="nav-search" onClick={() => setCommandOpen(true)} title="Search">
+            <span className="nav-icon"><IconSearch /></span>
+            <span className="label">Search</span>
+            <span className="k">Ctrl+K</span>
+          </button>
+          <button className="nav-collapse ghost btn" onClick={startWizard} title="Add server" aria-label="Add server">
+            <span className="nav-icon" aria-hidden="true"><IconPlus /></span>
+            <span className="label">Add server</span>
+          </button>
         </nav>
         <main className="main">
           <ErrorBoundary>{Page ? <Page /> : null}</ErrorBoundary>
@@ -166,7 +148,8 @@ function PaletteHits() {
             setCommandOpen(false);
           }}
         >
-          {alert.playerName} · {alert.checkName} · {formatAgo(alert.timestamp)}
+          <PlayerAvatar name={alert.playerName} uuid={alert.playerUuid} size={22} />
+          <span>{alert.playerName} · {alert.checkName} · {formatAgo(alert.timestamp)}</span>
         </button>
       ))}
     </>
@@ -186,19 +169,4 @@ const PAGES: Record<ViewId, () => ReactElement> = {
   settings: SettingsPage,
 };
 
-function statusLabel(state: string | undefined, rtt?: number): string {
-  switch (state) {
-    case "connected":
-      return `Connected${typeof rtt === "number" && rtt > 0 ? ` · ${Math.round(rtt)}ms` : ""}`;
-    case "connecting":
-      return "Connecting";
-    case "reconnecting":
-      return "Reconnecting";
-    case "auth-failed":
-      return "Authentication failed";
-    case "protocol-mismatch":
-      return "Protocol mismatch";
-    default:
-      return "Offline";
-  }
-}
+

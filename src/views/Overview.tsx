@@ -1,5 +1,6 @@
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Badge, Empty } from "../ui/bits";
+import { PlayerAvatar } from "../ui/PlayerAvatar";
 import { useApp } from "../state/store";
 import { useActiveAlerts, useActiveRuntime } from "../state/hooks";
 import { formatAgo, formatBytes, formatNumber } from "../lib/format";
@@ -98,7 +99,10 @@ export function OverviewPage() {
             onKeyDown={() => undefined}
           >
             <Badge severity={alert.severity} />
-            <strong>{alert.playerName}</strong>
+            <span className="player-cell">
+              <PlayerAvatar name={alert.playerName} uuid={alert.playerUuid} size={22} />
+              <strong>{alert.playerName}</strong>
+            </span>
             <span>{alert.checkName}</span>
             <span className="muted">VL {(alert.vl ?? 0).toFixed(1)}</span>
             <span className="muted">{formatAgo(alert.timestamp)}</span>

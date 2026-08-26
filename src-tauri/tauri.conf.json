@@ -17,11 +17,14 @@
         "height": 820,
         "minWidth": 480,
         "minHeight": 600,
+        "decorations": false,
+        "shadow": true,
+        "resizable": true,
         "backgroundColor": "#0B0C0E"
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost ws: wss:; img-src 'self' asset: http://asset.localhost data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost ws: wss:; img-src 'self' asset: http://asset.localhost data: https://mc-heads.net https://minotar.net https://crafatar.com; style-src 'self' 'unsafe-inline'; script-src 'self'"
     },
     "trayIcon": {
       "iconPath": "icons/icon.png",

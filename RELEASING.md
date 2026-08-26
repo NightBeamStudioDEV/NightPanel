@@ -1,16 +1,23 @@
 # Release policy
 
-NightPanel does not publish unsigned binaries. Maintainers must validate the public protocol against the minimum supported NightWatch Pro release before creating a release.
+Pushing a `v*` tag on `main` runs `.github/workflows/release.yml` and publishes a GitHub Release with:
+
+- Windows x64 NSIS setup and MSI
+- Linux x64 and ARM64 AppImage and deb
+- macOS Apple Silicon (`aarch64`) and Intel (`x86_64`)
+
+Minimum NightWatch Pro: **3.3.0**.
+
+These CI artifacts are **unsigned** until organization signing credentials exist. Signing work still required:
+
+- Windows Authenticode (MSI/NSIS)
+- macOS signing and notarization
+- signed Tauri updater metadata over HTTPS
 
 Release credentials belong only in organization-level GitHub Actions environments. They must never be stored in this repository, uploaded to an issue, or printed in workflow logs.
 
-Before the first binary release, maintainers must configure and review:
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
 
-- Windows x64 MSI/NSIS code signing;
-- a macOS universal build with signing and notarization;
-- Linux x64 AppImage and deb packages;
-- signed Tauri updater metadata over HTTPS, with the public verification key embedded in the application;
-- protected release environments and least-privilege workflow permissions;
-- compatibility validation against the documented minimum NightWatch Pro version.
-
-Until all controls are active, tags and source archives may be published, but binary packages and updater metadata must not be published.

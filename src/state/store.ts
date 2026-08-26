@@ -317,7 +317,22 @@ export const useApp = create<AppState>((set, get) => ({
   requestPlayerAction: async (serverId, action) => {
     const conn = connections.get(serverId);
     if (!conn) throw new Error("server is not connected");
-    await conn.request("player.action", action as unknown as Record<string, unknown>);
+    const reason = action.reason.trim();
+    if (reason.length < 3 || reason.length > 240) {
+      throw new Error("reason must contain 3-240 characters");
+    }
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(action.uuid)) {
+      throw new Error("select an online player before running an action");
+    }
+    const data: Record<string, unknown> = {
+      action: action.action,
+      uuid: action.uuid,
+      reason,
+    };
+    if (action.action === "temporary_exemption") {
+      data.durationSeconds = action.durationSeconds ?? 900;
+    }
+    await conn.request("player.action", data);
     get().pushToast(`${action.action.replaceAll("_", " ")} completed`);
     await conn.request("get.players");
   },
