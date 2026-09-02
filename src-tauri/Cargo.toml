@@ -22,7 +22,7 @@ tauri-plugin-single-instance = "2"
 tauri-plugin-autostart = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-rusqlite = { version = "0.32", features = ["bundled"] }
+rusqlite = { version = "0.40", features = ["bundled"] }
 keyring = { version = "3", features = ["windows-native", "apple-native", "sync-secret-service"] }
 
 [features]
